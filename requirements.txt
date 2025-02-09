@@ -1,0 +1,6 @@
+django>=4.2.0
+yfinance>=0.2.36
+plotly>=5.18.0
+pandas>=2.1.4
+matplotlib>=3.8.2
+python-dotenv>=1.0.0

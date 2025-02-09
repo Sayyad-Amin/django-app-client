@@ -1,0 +1,755 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #4f46e5;
+        --success-color: #10b981;
+        --light-bg: #f8fafc;
+        --dark-text: #1e293b;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--light-bg);
+        color: var(--dark-text);
+        padding-top: 80px;
+    }
+
+    /* Animated Navbar */
+    .navbar {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        animation: slideDown 0.5s ease;
+    }
+
+    .nav-link {
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+        width: 70%;
+        left: 15%;
+    }
+
+    /* Modern Filter Section */
+    .filter-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin: 2rem auto;
+        animation: fadeIn 0.6s ease;
+    }
+
+    .filter-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .filter-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .filter-item {
+        position: relative;
+        animation: slideUp 0.5s ease;
+    }
+
+    .filter-item select {
+        width: 100%;
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-item select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    /* Enhanced Table */
+    .stock-table {
+        border-collapse: separate;
+        border-spacing: 0 0.75rem;
+    }
+
+    .stock-table thead th {
+        background: var(--primary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border: none;
+    }
+
+    .stock-table tbody tr {
+        background: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        animation: slideIn 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stock-table tbody tr:hover {
+        transform: translateX(8px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .stock-table tbody td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    /* Status Indicators */
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 0.6s ease;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .filter-group {
+            grid-template-columns: 1fr;
+        }
+        
+        .stock-table thead {
+            display: none;
+        }
+        
+        .stock-table tbody tr {
+            display: block;
+            margin-bottom: 1rem;
+        }
+        
+        .stock-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border: none;
+        }
+        
+        .stock-table tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #64748b;
+            margin-right: 1rem;
+        }
+    }
+</style>
+
+
+<div class="container">
+    <!-- Filter Section -->
+    <div class="filter-container">
+        <div class="filter-header">
+            <i class="fas fa-filter"></i>
+            Advanced Stock Screener
+        </div>
+        <div class="filter-group">
+            <div class="filter-item">
+                <label><i class="fas fa-chess-king mr-2"></i>Strategy</label>
+                <select class="form-control" id="strategy">
+                    <option value="">All Strategies</option>
+                    <option value="GROWTH">Growth</option>
+                    <option value="VALUE">Value</option>
+                    <option value="MOMENTUM">Momentum</option>
+                    <option value="QUALITY">Quality</option>
+                    <option value="DIVIDEND">Dividend</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-user-tie mr-2"></i>Investor</label>
+                <select class="form-control" id="legend">
+                    <option value="">All Investors</option>
+                    <option value="buffett">Warren Buffett</option>
+                    <option value="lynch">Peter Lynch</option>
+                    <option value="graham">Benjamin Graham</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label><i class="fas fa-fire mr-2"></i>Quick Filters</label>
+                <select class="form-control" id="filter">
+                    <option value="">Popular Filters</option>
+                    <option value="low_pe">Low P/E</option>
+                    <option value="high_dividend">High Dividend</option>
+                    <option value="strong_growth">EPS Growth</option>
+                    <option value="below_book">Below Book</option>
+                    <option value="oversold">Oversold</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <style>
+        /* Previous styles remain the same */
+    
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 0 0 12px 12px;
+        }
+    
+        .pagination-btn {
+            padding: 0.75rem 1.5rem;
+            margin: 0 0.5rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    
+        .pagination-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        .page-info {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin: 0 1rem;
+        }
+    
+        .results-count {
+            background: var(--light-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .search-container {
+            position: relative;
+            margin-right: 1rem;
+        }
+        
+        .search-container input {
+            width: 200px;
+            padding: 0.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-container input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+    </style>
+    
+
+    <!-- Results Section -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-table mr-2"></i>Screener Results</h5>
+            <div class="d-flex align-items-center gap-3">
+                <div class="search-container">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search by symbol or name...">
+                </div>
+                <span class="results-count" id="results-count">Loading...</span>
+                <button class="btn btn-success" id="export-csv">
+                    <i class="fas fa-file-export mr-2"></i>Export CSV
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="stock-table table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Company</th>
+                            <th>Price (SR)</th>
+                            <th>Market Cap</th>
+                            <th>P/E Ratio</th>
+                            <th>EPS Growth</th>
+                            <th>Dividend Yield</th>
+                            <th>RSI</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-data">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Controls -->
+            <div class="pagination-container">
+                <button class="pagination-btn" id="prev-page" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="page-info">
+                    Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                </span>
+                <button class="pagination-btn" id="next-page" disabled>
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="stock-table table">
+                    <!-- Table header remains the same -->
+                    <tbody id="stock-data">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Controls -->
+            {% comment %} <div class="pagination-container">
+                <button class="pagination-btn" id="prev-page" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="page-info">
+                    Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                </span>
+                <button class="pagination-btn" id="next-page" disabled>
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div> {% endcomment %}
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mt-4">
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <h5 class="chart-title"><i class="fas fa-chart-bar mr-2"></i>EPS Growth Distribution</h5>
+                <canvas id="eps-growth-chart"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <h5 class="chart-title"><i class="fas fa-chart-pie mr-2"></i>Rating Distribution</h5>
+                <canvas id="rating-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let currentCharts = [];
+    let allStocks = [];
+    let currentPage = 1;
+    const itemsPerPage = 15;
+
+    async function fetchStockData() {
+        try {
+            document.getElementById('stock-data').innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </td>
+                </tr>`;
+
+            const params = new URLSearchParams({
+                strategy: document.getElementById('strategy').value,
+                legend: document.getElementById('legend').value,
+                filter: document.getElementById('filter').value
+            });
+
+            const response = await fetch(`{% url 'screener' %}?${params}`);
+            const data = await response.json();
+            
+            allStocks = data.data;
+            currentPage = 1; // Reset to first page on new data
+            updateResultsCount();
+            renderTable();
+            updatePaginationControls();
+            updateCharts(allStocks);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('stock-data').innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-danger py-4">
+                        Failed to load data. Please try again.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('stock-data');
+        tbody.innerHTML = '';
+        
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageStocks = allStocks.slice(startIndex, endIndex);
+
+        if (pageStocks.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">
+                        No results found for the selected filters
+                    </td>
+                </tr>`;
+            return;
+        }
+        function formatMarketCap(marketCap) {
+            if (marketCap >= 1e12) {
+                return `SR ${(marketCap / 1e12).toFixed(2)}T`;  // Trillions
+            } else if (marketCap >= 1e9) {
+                return `SR ${(marketCap / 1e9).toFixed(2)}B`;  // Billions
+            } else if (marketCap >= 1e6) {
+                return `SR ${(marketCap / 1e6).toFixed(2)}M`;  // Millions
+            } else {
+                return `SR ${marketCap.toFixed(2)}`;  // Default
+            }
+        }
+        function formatPriceToSR(priceInUSD) {
+            const exchangeRate = 3.75; // 1 USD = 3.75 SAR
+            const priceInSAR = priceInUSD * exchangeRate;
+            return `SR ${priceInSAR.toFixed(2)}`; // Format to 2 decimal places and add SR prefix
+        }
+
+        pageStocks.forEach((stock, index) => {
+            const row = document.createElement('tr');
+            row.style.animationDelay = `${index * 0.05}s`;
+            row.innerHTML = `
+                <td data-label="Symbol">${stock.symbol}</td>
+                <td data-label="Company">${stock.name}</td>
+                <td data-label="Price (SR)"> ${formatPriceToSR(stock.last_price.toFixed(2))}</td>
+                <td data-label="Market Cap">${formatMarketCap(stock.market_cap)}</td>
+                <td data-label="P/E Ratio">${stock.pe_ratio?.toFixed(2) || 'N/A'}</td>
+                <td data-label="EPS Growth">
+                    <span class="${stock.eps_growth >= 0 ? 'trend-up' : 'trend-down'}">
+                        <i class="fas fa-arrow-${stock.eps_growth >= 0 ? 'up' : 'down'}"></i>
+                        ${(stock.eps_growth * 100)?.toFixed(1)}%
+                    </span>
+                </td>
+                <td data-label="Dividend Yield">
+                    ${stock.dividend_yield ? `${(stock.dividend_yield * 100).toFixed(2)}%` : 'N/A'}
+                </td>
+                <td data-label="RSI">
+                    <span class="badge ${getRSIClass(stock.rsi)}">
+                        ${stock.rsi?.toFixed(1) || 'N/A'}
+                    </span>
+                </td>
+                <td data-label="Rating">
+                    <span class="rating-badge">
+                        <i class="fas fa-star"></i>${stock.ek_rating}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    function updatePaginationControls() {
+        const totalPages = Math.ceil(allStocks.length / itemsPerPage);
+        document.getElementById('current-page').textContent = currentPage;
+        document.getElementById('total-pages').textContent = totalPages;
+        document.getElementById('prev-page').disabled = currentPage === 1;
+        document.getElementById('next-page').disabled = currentPage === totalPages;
+    }
+
+    function updateResultsCount() {
+        const count = allStocks.length;
+        document.getElementById('results-count').innerHTML = `
+            Showing ${Math.min(itemsPerPage, count)} of ${count} results`;
+    }
+
+    // Event Listeners for Pagination
+    document.getElementById('prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderTable();
+            updatePaginationControls();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+
+    document.getElementById('next-page').addEventListener('click', () => {
+        const totalPages = Math.ceil(allStocks.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderTable();
+            updatePaginationControls();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+
+    function updateCharts(stocks) {
+        // Destroy existing charts
+        currentCharts.forEach(chart => chart.destroy());
+        currentCharts = [];
+
+        // Prepare data
+        const epsData = stocks.map(s => s.eps_growth).filter(Boolean);
+        const ratings = stocks.reduce((acc, s) => {
+            acc[s.ek_rating] = (acc[s.ek_rating] || 0) + 1;
+            return acc;
+        }, {});
+
+        // EPS Growth Chart
+        const epsCtx = document.getElementById('eps-growth-chart').getContext('2d');
+        currentCharts.push(new Chart(epsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['<10%', '10-20%', '20-30%', '30-40%', '>40%'],
+                datasets: [{
+                    label: 'Companies',
+                    data: [
+                        epsData.filter(d => d < 0.1).length,
+                        epsData.filter(d => d >= 0.1 && d < 0.2).length,
+                        epsData.filter(d => d >= 0.2 && d < 0.3).length,
+                        epsData.filter(d => d >= 0.3 && d < 0.4).length,
+                        epsData.filter(d => d >= 0.4).length
+                    ],
+                    backgroundColor: '#3b82f6',
+                    borderColor: '#2563eb',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Number of Companies' } },
+                    x: { title: { display: true, text: 'EPS Growth Range' } }
+                }
+            }
+        }));
+
+        // Rating Chart
+        const ratingCtx = document.getElementById('rating-chart').getContext('2d');
+        currentCharts.push(new Chart(ratingCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(ratings),
+                datasets: [{
+                    data: Object.values(ratings),
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: { enabled: true }
+                }
+            }
+        }));
+    }
+
+    // Helper functions
+    function formatMarketCap(value) {
+        if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`;
+        if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+        if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+        return value;
+    }
+
+    function getRSIClass(value) {
+        if (!value) return 'bg-secondary';
+        if (value < 30) return 'bg-success';
+        if (value > 70) return 'bg-danger';
+        return 'bg-warning';
+    }
+
+    // Event Listeners
+    document.querySelectorAll('#strategy, #legend, #filter').forEach(select => {
+        select.addEventListener('change', () => {
+            select.style.borderColor = select.value ? '#2563eb' : '#e2e8f0';
+            fetchStockData();
+        });
+    });
+
+    document.getElementById('export-csv').addEventListener('click', function() {
+        const table = document.getElementById('stock-table');
+        let csv = [];
+        
+        // Add headers
+        const headerRow = [];
+        document.querySelectorAll('#stock-table thead th').forEach(th => {
+            headerRow.push(th.innerText);
+        });
+        csv.push(headerRow.join(','));
+        
+        // Add data rows
+        document.querySelectorAll('#stock-table tbody tr').forEach(row => {
+            const rowData = [];
+            row.querySelectorAll('td').forEach(cell => {
+                rowData.push(cell.innerText);
+            });
+            csv.push(rowData.join(','));
+        });
+        
+        // Create and download CSV
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'stock_data.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+// Add this function to filter stocks based on search input
+function filterStocks(searchText) {
+    const filteredStocks = allStocks.filter(stock => {
+        return stock.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
+               stock.name.toLowerCase().includes(searchText.toLowerCase());
+    });
+    return filteredStocks;
+}
+
+// Add event listener for search input
+document.getElementById('search-input').addEventListener('input', function() {
+    const searchText = this.value.trim();
+    const filteredStocks = filterStocks(searchText);
+    
+    // Update the table with filtered results
+    allStocks = filteredStocks;
+    currentPage = 1; // Reset to first page on new search
+    renderTable();
+    updatePaginationControls();
+    updateResultsCount();
+});
+
+// Modify the renderTable function to use the filtered stocks
+function renderTable() {
+    const tbody = document.getElementById('stock-data');
+    tbody.innerHTML = '';
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageStocks = allStocks.slice(startIndex, endIndex);
+
+    if (pageStocks.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center py-4 text-muted">
+                    No results found for the search criteria
+                </td>
+            </tr>`;
+        return;
+    }
+
+    pageStocks.forEach((stock, index) => {
+        const row = document.createElement('tr');
+        row.style.animationDelay = `${index * 0.05}s`;
+        row.innerHTML = `
+        <td data-label="Symbol">${stock.symbol}</td>
+        <td data-label="Company">${stock.name}</td>
+        <td data-label="Price">$${stock.last_price.toFixed(2)}</td>
+        <td data-label="Market Cap">${formatMarketCap(stock.market_cap)}</td>
+        <td data-label="P/E Ratio">${stock.pe_ratio?.toFixed(2) || 'N/A'}</td>
+        <td data-label="EPS Growth">
+            <span class="${stock.eps_growth >= 0 ? 'trend-up' : 'trend-down'}">
+                <i class="fas fa-arrow-${stock.eps_growth >= 0 ? 'up' : 'down'}"></i>
+                ${(stock.eps_growth * 100)?.toFixed(1)}%
+            </span>
+        </td>
+        <td data-label="Dividend">
+            ${stock.dividend_yield ? `${(stock.dividend_yield * 100).toFixed(2)}%` : 'N/A'}
+        </td>
+        <td data-label="RSI">
+            <span class="badge ${getRSIClass(stock.rsi)}">
+                ${stock.rsi?.toFixed(1) || 'N/A'}
+            </span>
+        </td>
+        <td data-label="Rating">
+            <span class="rating-badge">
+                <i class="fas fa-star"></i>${stock.ek_rating}
+            </span>
+        </td>
+       `;
+        tbody.appendChild(row);
+    });
+}
+    // Event listener for filters change
+    document.getElementById('strategy').addEventListener('change', fetchStockData);
+    document.getElementById('legend').addEventListener('change', fetchStockData);
+    document.getElementById('filter').addEventListener('change', fetchStockData);
+
+    // Initial fetch
+    fetchStockData();
+</script>
+{% endblock %}
+
+
+

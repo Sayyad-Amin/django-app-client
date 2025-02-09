@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Previous CSS remains the same */
+</style>
+
+<div class="container">
+    <!-- Filter Section remains the same -->
+
+    <!-- Results Section -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-table mr-2"></i>Screener Results</h5>
+            <div class="d-flex align-items-center gap-3">
+                <div class="search-container">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search by symbol or name...">
+                </div>
+                <span class="results-count" id="results-count">Loading...</span>
+                <button class="btn btn-success" id="export-csv">
+                    <i class="fas fa-file-export mr-2"></i>Export CSV
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="stock-table table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Company</th>
+                            <th>Price (SR)</th>
+                            <th>Market Cap</th>
+                            <th>P/E Ratio</th>
+                            <th>EPS Growth</th>
+                            <th>Dividend Yield</th>
+                            <th>RSI</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-data">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Controls -->
+            <div class="pagination-container">
+                <button class="pagination-btn" id="prev-page" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="page-info">
+                    Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                </span>
+                <button class="pagination-btn" id="next-page" disabled>
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section remains the same -->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let currentCharts = [];
+    let allStocks = [];
+    let currentPage = 1;
+    const itemsPerPage = 15;
+
+    async function fetchStockData() {
+        try {
+            document.getElementById('stock-data').innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </td>
+                </tr>`;
+
+            const params = new URLSearchParams({
+                strategy: document.getElementById('strategy').value,
+                legend: document.getElementById('legend').value,
+                filter: document.getElementById('filter').value
+            });
+
+            const response = await fetch(`{% url 'screener' %}?${params}`);
+            const data = await response.json();
+            
+            allStocks = data.data;
+            currentPage = 1; // Reset to first page on new data
+            updateResultsCount();
+            renderTable();
+            updatePaginationControls();
+            updateCharts(allStocks);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('stock-data').innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-danger py-4">
+                        Failed to load data. Please try again.
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('stock-data');
+        tbody.innerHTML = '';
+        
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageStocks = allStocks.slice(startIndex, endIndex);
+
+        if (pageStocks.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">
+                        No results found for the selected filters
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        pageStocks.forEach((stock, index) => {
+            const row = document.createElement('tr');
+            row.style.animationDelay = `${index * 0.05}s`;
+            row.innerHTML = `
+                <td data-label="Symbol">${stock.symbol}</td>
+                <td data-label="Company">${stock.name}</td>
+                <td data-label="Price (SR)">SR ${stock.last_price.toFixed(2)}</td>
+                <td data-label="Market Cap">${formatMarketCap(stock.market_cap)}</td>
+                <td data-label="P/E Ratio">${stock.pe_ratio?.toFixed(2) || 'N/A'}</td>
+                <td data-label="EPS Growth">
+                    <span class="${stock.eps_growth >= 0 ? 'trend-up' : 'trend-down'}">
+                        <i class="fas fa-arrow-${stock.eps_growth >= 0 ? 'up' : 'down'}"></i>
+                        ${(stock.eps_growth * 100)?.toFixed(1)}%
+                    </span>
+                </td>
+                <td data-label="Dividend Yield">
+                    ${stock.dividend_yield ? `${(stock.dividend_yield * 100).toFixed(2)}%` : 'N/A'}
+                </td>
+                <td data-label="RSI">
+                    <span class="badge ${getRSIClass(stock.rsi)}">
+                        ${stock.rsi?.toFixed(1) || 'N/A'}
+                    </span>
+                </td>
+                <td data-label="Rating">
+                    <span class="rating-badge">
+                        <i class="fas fa-star"></i>${stock.ek_rating}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Rest of the JavaScript remains the same
+</script>
+{% endblock %}

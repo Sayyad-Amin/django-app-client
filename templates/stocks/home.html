@@ -1,0 +1,542 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Global Styles */
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #4f46e5;
+        --success-color: #10b981;
+        --light-bg: #f8fafc;
+        --dark-text: #1e293b;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--light-bg);
+        color: var(--dark-text);
+        overflow-x: hidden;
+    }
+
+    /* Full Width Sections */
+    .section-full {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 120px 0;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: var(--light-bg);
+        transform: skewY(-3deg);
+        z-index: 1;
+    }
+
+    .hero-section h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .hero-section p {
+        font-size: 1.25rem;
+        margin-bottom: 2.5rem;
+        opacity: 0.9;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 100px 0;
+        background: var(--light-bg);
+    }
+
+    .features-section h2 {
+        font-size: 2.75rem;
+        font-weight: 700;
+        margin-bottom: 4rem;
+        text-align: center;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(37,99,235,0.1));
+        transform: rotate(45deg);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .feature-card .icon {
+        font-size: 3.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .icon {
+        transform: scale(1.1);
+    }
+
+    .feature-card h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--dark-text);
+    }
+
+    .feature-card p {
+        font-size: 1rem;
+        color: #64748b;
+        line-height: 1.6;
+    }
+
+    /* Filter Showcase Section */
+    .filter-showcase {
+        padding: 100px 0;
+        background: white;
+    }
+
+    .filter-showcase h2 {
+        font-size: 2.75rem;
+        font-weight: 700;
+        margin-bottom: 4rem;
+        text-align: center;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .filter-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-color);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .filter-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .filter-card .icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        transition: color 0.3s ease;
+    }
+
+    .filter-card h3 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        color: var(--dark-text);
+    }
+
+    .filter-card p {
+        font-size: 1.1rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .filter-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .filter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background: var(--light-bg);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .filter-item:hover {
+        background: var(--primary-color);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(37,99,235,0.1);
+    }
+
+    .filter-item i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        transition: color 0.3s ease;
+    }
+
+    .filter-item:hover i {
+        color: white;
+    }
+
+    .filter-item span {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--dark-text);
+        transition: color 0.3s ease;
+    }
+
+    .filter-item:hover span {
+        color: white;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: var(--primary-color);
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: white;
+        transform: skewY(-3deg);
+        z-index: 1;
+    }
+
+    .cta-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .cta-section h2 {
+        font-size: 2.75rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+
+    .cta-section p {
+        font-size: 1.25rem;
+        color: rgba(255,255,255,0.9);
+        margin-bottom: 2.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .hero-section h1 {
+            font-size: 3.5rem;
+        }
+
+        .features-section h2,
+        .filter-showcase h2,
+        .cta-section h2 {
+            font-size: 2.5rem;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .hero-section {
+            padding: 80px 0;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+        }
+
+        .features-section,
+        .filter-showcase,
+        .cta-section {
+            padding: 80px 0;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+            max-width: 800px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2.5rem;
+        }
+
+        .hero-section p,
+        .cta-section p {
+            font-size: 1.1rem;
+        }
+
+        .features-section h2,
+        .filter-showcase h2,
+        .cta-section h2 {
+            font-size: 2rem;
+        }
+
+        .feature-grid,
+        .filter-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            padding: 0 1.5rem;
+        }
+
+        .filter-options {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+        .filter-options {
+            grid-template-columns: 1fr;
+        }
+
+        .cta-section .btn {
+            width: 100%;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.8s ease forwards;
+        opacity: 0;
+    }
+
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+    .delay-3 { animation-delay: 0.6s; }
+</style>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="animate-up"> MODREK Rating & Classical Stocks Presets</h1>
+        <p class="animate-up delay-1">Advanced screening tools and predictive analytics for modern investors</p>
+        <a href="#" class="btn animate-up delay-2">Get Started Free</a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="animate-up">Why Choose Us?</h2>
+        <div class="feature-grid">
+            <div class="feature-card animate-up">
+                <i class="fas fa-chart-line icon"></i>
+                <h3>AI-Powered Predictions</h3>
+                <p>Leverage machine learning models to analyze market trends and make informed decisions.</p>
+            </div>
+            <div class="feature-card animate-up delay-1">
+                <i class="fas fa-database icon"></i>
+                <h3>Comprehensive Data</h3>
+                <p>Access real-time market data and historical trends for accurate analysis.</p>
+            </div>
+            <div class="feature-card animate-up delay-2">
+                <i class="fas fa-cogs icon"></i>
+                <h3>Customizable Tools</h3>
+                <p>Tailor your stock screening with flexible filters and strategies.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Showcase Section -->
+<section class="filter-showcase">
+    <div class="container">
+        <h2 class="animate-up">Explore Our Powerful Filters</h2>
+        <div class="filter-grid">
+            <!-- Strategies Filter -->
+            <div class="filter-card animate-up">
+                <i class="fas fa-chess-king icon"></i>
+                <h3>Investment Strategies</h3>
+                <p>Choose from Growth, Value, Momentum, Quality, and Dividend strategies.</p>
+                <div class="filter-options">
+                    <div class="filter-item">
+                        <i class="fas fa-seedling"></i>
+                        <span>Growth</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-coins"></i>
+                        <span>Value</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-rocket"></i>
+                        <span>Momentum</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-award"></i>
+                        <span>Quality</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span>Dividend</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investors Filter -->
+            <div class="filter-card animate-up delay-1">
+                <i class="fas fa-user-tie icon"></i>
+                <h3>Legendary Investors</h3>
+                <p>Follow the strategies of Warren Buffett, Peter Lynch, and Benjamin Graham.</p>
+                <div class="filter-options">
+                    <div class="filter-item">
+                        <i class="fas fa-user"></i>
+                        <span>Warren Buffett</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-user"></i>
+                        <span>Peter Lynch</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-user"></i>
+                        <span>Benjamin Graham</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="filter-card animate-up delay-2">
+                <i class="fas fa-fire icon"></i>
+                <h3>Quick Filters</h3>
+                <p>Apply popular filters like Low P/E, High Dividend, and Oversold Stocks.</p>
+                <div class="filter-options">
+                    <div class="filter-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Low P/E</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-percent"></i>
+                        <span>High Dividend</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>EPS Growth</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-book"></i>
+                        <span>Below Book</span>
+                    </div>
+                    <div class="filter-item">
+                        <i class="fas fa-thermometer-empty"></i>
+                        <span>Oversold</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2 class="animate-up">Ready to Start?</h2>
+        <p class="animate-up delay-1">Join thousands of investors making smarter decisions with our platform.</p>
+        <a href="#" class="btn btn-light animate-up delay-2">Sign Up Now</a>
+    </div>
+</section>
+
+<script>
+    // Add intersection observer for scroll animations
+    const animateElements = document.querySelectorAll('.animate-up');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, { threshold: 0.2 });
+
+    animateElements.forEach(element => {
+        observer.observe(element);
+    });
+</script>
+
+{% endblock %}
